@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { onAuthStateChanged } from 'firebase/auth'
+import { useDispatch } from 'react-redux'
 import { AuthModel } from './Auth/AuthModel'
 import { auth } from './Auth/Firebase'
 import { InstagramPage } from './InstagramPage'
+import { setAuthUser, clearAuthUser } from './store/slices/authSlice'
 
 const ProtectedRoute = ({ user, children }) => {
   if (!user) {
@@ -22,17 +24,28 @@ const PublicRoute = ({ user, children }) => {
 }
 
 export const App = () => {
+  const dispatch = useDispatch()
   const [user, setUser] = useState(null)
   const [checkingAuth, setCheckingAuth] = useState(true)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser)
+      if (firebaseUser) {
+        dispatch(setAuthUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+        }))
+      } else {
+        dispatch(clearAuthUser())
+      }
       setCheckingAuth(false)
     })
 
     return unsubscribe
-  }, [])
+  }, [dispatch])
 
   if (checkingAuth) {
     return (
@@ -57,7 +70,7 @@ export const App = () => {
           path="/instagram"
           element={
             <ProtectedRoute user={user}>
-              <InstagramPage user={user} />
+              <InstagramPage />
             </ProtectedRoute>
           }
         />
