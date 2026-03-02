@@ -54,7 +54,7 @@ export const App = () => {
   if (checkingAuth) {
     return (
       <main className="grid min-h-screen place-items-center bg-zinc-100 text-slate-700">
-        Checking account...
+        Wait Please
       </main>
     )
   }
