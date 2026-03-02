@@ -84,14 +84,12 @@ export const CreatePostModal = () => {
             </button>
           ) : (
             <div className="relative">
-              {/* current preview */}
               {files[previewIdx]?.type.startsWith('video') ? (
                 <video src={previews[previewIdx]} controls className="max-h-72 w-full rounded-xl bg-black object-contain" />
               ) : (
                 <img src={previews[previewIdx]} alt="preview" className="max-h-72 w-full rounded-xl bg-zinc-100 object-contain" />
               )}
 
-              {/* slide arrows */}
               {files.length > 1 && previewIdx > 0 && (
                 <button onClick={() => setPreviewIdx((i) => i - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-1 text-white hover:bg-black/80">
                   <ChevronLeft className="h-4 w-4" />
@@ -103,7 +101,6 @@ export const CreatePostModal = () => {
                 </button>
               )}
 
-              {/* dots */}
               {files.length > 1 && (
                 <div className="absolute bottom-2 flex w-full justify-center gap-1">
                   {files.map((_, i) => (
@@ -112,7 +109,6 @@ export const CreatePostModal = () => {
                 </div>
               )}
 
-              {/* remove current file */}
               <button onClick={() => handleRemoveFile(previewIdx)} className="absolute right-2 top-2 rounded-full bg-black/60 p-1 text-white transition hover:bg-black/80">
                 <X className="h-4 w-4" />
               </button>
@@ -121,7 +117,7 @@ export const CreatePostModal = () => {
 
           <input ref={fileRef} type="file" accept="image/*,video/*" multiple className="hidden" onChange={handleAddFiles} />
 
-          {/* thumbnail strip + add‑more */}
+          {/* thumbnail strip + add more */}
           {files.length > 0 && (
             <div className="flex items-center gap-2 overflow-x-auto">
               {files.map((f, i) => (
@@ -153,7 +149,7 @@ export const CreatePostModal = () => {
               rows={3}
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              placeholder="Write a caption..."
+              placeholder="Write a caption... Use #hashtags and @mentions"
               className="w-full resize-none rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-zinc-400"
             />
           </div>

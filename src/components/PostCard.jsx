@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Heart, MessageCircle, Send, Bookmark, Trash2, UserPlus, UserCheck, Clock, Users } from 'lucide-react'
-import { toggleLike, sharePost, deletePost } from '../store/slices/postsSlice'
-import { sendFriendRequest, cancelFriendRequest, acceptFriendRequest, unfriend } from '../store/slices/friendSlice'
-import { openConfirmModal } from '../store/slices/uiSlice'
+import { ref, onValue } from 'firebase/database'
+import { db } from '../Auth/Firebase'
+import { Heart, MessageCircle, Send, Bookmark, Trash2, UserPlus, UserCheck, Clock, Users, MoreHorizontal } from 'lucide-react'
+import { toggleLike, sharePost } from '../store/slices/postsSlice'
+import { sendFriendRequest, cancelFriendRequest, acceptFriendRequest } from '../store/slices/friendSlice'
+import { openConfirmModal, openCommentsModal } from '../store/slices/uiSlice'
 import { MediaCarousel } from './MediaCarousel'
-import { CommentsSection } from './CommentsSection'
 
 const timeAgo = (ts) => {
   if (!ts) return ''
@@ -23,6 +24,23 @@ const getPostMedia = (post) => {
   return []
 }
 
+/** Render caption with highlighted #hashtags and @mentions */
+const CaptionText = ({ text }) => {
+  if (!text) return null
+  const parts = text.split(/(#\w+|@\w+)/g)
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.startsWith('#') || part.startsWith('@') ? (
+          <span key={i} className="text-[#00376b] font-medium cursor-pointer hover:underline">{part}</span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  )
+}
+
 export const PostCard = ({ post }) => {
   const dispatch = useDispatch()
   const { uid } = useSelector((s) => s.auth)
@@ -32,8 +50,20 @@ export const PostCard = ({ post }) => {
   const incomingRequests = useSelector((s) => s.friend.incomingRequests)
   const sentRequests = useSelector((s) => s.friend.sentRequests)
 
+  const [commentCount, setCommentCount] = useState(post.commentCount || 0)
+  const [showFullCaption, setShowFullCaption] = useState(false)
+
   const isOwner = post.uid === uid
   const media = getPostMedia(post)
+  const isLiked = !!likedPosts[post.id]
+
+  // listen to live comment count
+  useEffect(() => {
+    const unsub = onValue(ref(db, `posts/${post.id}/commentCount`), (snap) => {
+      setCommentCount(snap.val() || 0)
+    })
+    return unsub
+  }, [post.id])
 
   const getRelationship = (targetId) => {
     if (targetId === uid) return 'self'
@@ -44,12 +74,13 @@ export const PostCard = ({ post }) => {
   }
 
   const rel = getRelationship(post.uid)
+  const captionLong = post.caption && post.caption.length > 100
 
   return (
     <article className="border-b border-zinc-200 pb-3 sm:pb-4">
-      {/* post header */}
+      {/* ── Post Header ── */}
       <div className="mb-2 flex items-center gap-3 px-3 sm:px-0">
-        <img src={post.photoURL || 'https://i.pravatar.cc/40'} alt="" className="h-8 w-8 rounded-full object-cover" />
+        <img src={post.photoURL || 'https://i.pravatar.cc/40'} alt="" className="h-9 w-9 rounded-full object-cover" />
         <div className="flex-1 overflow-hidden">
           <p className="truncate text-[13px] font-semibold leading-tight">
             {post.displayName || post.uid}
@@ -89,8 +120,8 @@ export const PostCard = ({ post }) => {
           </button>
         )}
 
-        {/* owner‑only delete */}
-        {isOwner && (
+        {/* owner delete / more */}
+        {isOwner ? (
           <button
             onClick={() =>
               dispatch(openConfirmModal({
@@ -104,37 +135,79 @@ export const PostCard = ({ post }) => {
           >
             <Trash2 className="h-4 w-4" />
           </button>
+        ) : (
+          <button className="text-slate-400 hover:text-slate-600">
+            <MoreHorizontal className="h-5 w-5" />
+          </button>
         )}
       </div>
 
-      {/* ── media carousel ── */}
+      {/* ── Media Carousel ── */}
       <MediaCarousel media={media} />
 
-      {/* action bar */}
+      {/* ── Action Bar ── */}
       <div className="mt-3 flex items-center gap-4 px-3 sm:px-0">
-        <button onClick={() => dispatch(toggleLike({ postId: post.id }))}>
+        <button onClick={() => dispatch(toggleLike({ postId: post.id }))} className="transition active:scale-125">
           <Heart
-            className={`h-6 w-6 transition ${likedPosts[post.id] ? 'fill-red-500 text-red-500' : 'text-slate-900'}`}
+            className={`h-6 w-6 transition ${isLiked ? 'fill-red-500 text-red-500 animate-[pulse_0.3s_ease-in-out]' : 'text-slate-900'}`}
             strokeWidth={1.8}
           />
         </button>
-        <button><MessageCircle className="h-6 w-6" strokeWidth={1.8} /></button>
-        <button onClick={() => dispatch(sharePost({ postId: post.id }))}><Send className="h-6 w-6" strokeWidth={1.8} /></button>
-        <button className="ml-auto"><Bookmark className="h-6 w-6" strokeWidth={1.8} /></button>
+        <button onClick={() => dispatch(openCommentsModal(post.id))}>
+          <MessageCircle className="h-6 w-6 text-slate-900" strokeWidth={1.8} />
+        </button>
+        <button onClick={() => dispatch(sharePost({ postId: post.id }))}>
+          <Send className="h-6 w-6 text-slate-900" strokeWidth={1.8} />
+        </button>
+        <button className="ml-auto">
+          <Bookmark className="h-6 w-6 text-slate-900" strokeWidth={1.8} />
+        </button>
       </div>
 
-      {/* like count */}
-      <p className="mt-2 px-3 text-[13px] font-semibold sm:px-0">{(post.likeCount || 0).toLocaleString()} likes</p>
+      {/* ── Like Count ── */}
+      <p className="mt-2 px-3 text-[13px] font-semibold sm:px-0">
+        {(post.likeCount || 0).toLocaleString()} likes
+      </p>
 
-      {/* caption */}
+      {/* ── Caption with hashtags ── */}
       {post.caption && (
-        <p className="mt-1 px-3 text-[13px] sm:px-0">
-          <span className="font-semibold">{post.displayName || post.uid}</span> {post.caption}
-        </p>
+        <div className="mt-1 px-3 text-[13px] leading-snug sm:px-0">
+          <span className="font-semibold">{post.displayName || post.uid}</span>{' '}
+          {captionLong && !showFullCaption ? (
+            <>
+              <CaptionText text={post.caption.slice(0, 100)} />
+              <span className="text-slate-400">... </span>
+              <button onClick={() => setShowFullCaption(true)} className="text-slate-400 hover:text-slate-600">more</button>
+            </>
+          ) : (
+            <CaptionText text={post.caption} />
+          )}
+        </div>
       )}
 
-      {/* comments */}
-      <CommentsSection postId={post.id} />
+      {/* ── View Comments link (opens popup) ── */}
+      <div className="mt-1 px-3 sm:px-0">
+        {commentCount > 0 ? (
+          <button
+            onClick={() => dispatch(openCommentsModal(post.id))}
+            className="text-[13px] text-slate-400 hover:text-slate-600 transition"
+          >
+            View all {commentCount} comment{commentCount !== 1 ? 's' : ''}
+          </button>
+        ) : (
+          <button
+            onClick={() => dispatch(openCommentsModal(post.id))}
+            className="text-[13px] text-slate-400 hover:text-slate-600 transition"
+          >
+            Add a comment...
+          </button>
+        )}
+      </div>
+
+      {/* ── Timestamp ── */}
+      <p className="mt-1 px-3 text-[10px] uppercase text-slate-400 sm:px-0">
+        {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : ''}
+      </p>
     </article>
   )
 }

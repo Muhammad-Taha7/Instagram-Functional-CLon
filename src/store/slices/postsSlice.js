@@ -12,7 +12,6 @@ export const createPost = createAsyncThunk(
 
     const media = []
     try {
-      // Convert files to base64 data URLs (stored directly in DB)
       for (const file of files) {
         const isVideo = file.type.startsWith('video')
         const url = await new Promise((resolve, reject) => {
@@ -24,14 +23,13 @@ export const createPost = createAsyncThunk(
         media.push({ url, type: isVideo ? 'video' : 'image' })
       }
 
-      // Write post + media directly to DB
       const newRef = push(ref(db, 'posts'))
       await set(newRef, {
         id: newRef.key,
         uid,
         displayName,
         photoURL,
-        caption,
+        caption: caption || '',
         media,
         createdAt: Date.now(),
         likeCount: 0,
@@ -42,6 +40,39 @@ export const createPost = createAsyncThunk(
     } catch (err) {
       console.error('createPost failed:', err)
       throw new Error(err?.message || 'Failed to create post')
+    }
+  }
+)
+
+export const createStory = createAsyncThunk(
+  'posts/createStory',
+  async ({ uid, displayName, photoURL, file }) => {
+    if (!uid) throw new Error('Not signed in')
+    if (!file) throw new Error('No file selected')
+
+    try {
+      const isVideo = file.type.startsWith('video')
+      const url = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+
+      const newRef = push(ref(db, `stories/${uid}`))
+      await set(newRef, {
+        id: newRef.key,
+        uid,
+        displayName,
+        photoURL,
+        media: { url, type: isVideo ? 'video' : 'image' },
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+      })
+      console.log('Story created:', newRef.key)
+    } catch (err) {
+      console.error('createStory failed:', err)
+      throw new Error(err?.message || 'Failed to create story')
     }
   }
 )
@@ -119,6 +150,9 @@ const postsSlice = createSlice({
       .addCase(createPost.pending, (state) => { state.uploading = true })
       .addCase(createPost.fulfilled, (state) => { state.uploading = false })
       .addCase(createPost.rejected, (state) => { state.uploading = false })
+      .addCase(createStory.pending, (state) => { state.uploading = true })
+      .addCase(createStory.fulfilled, (state) => { state.uploading = false })
+      .addCase(createStory.rejected, (state) => { state.uploading = false })
   },
 })
 

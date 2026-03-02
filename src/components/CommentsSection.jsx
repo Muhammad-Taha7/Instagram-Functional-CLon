@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { ref, onValue } from 'firebase/database'
-import { ChevronDown, ChevronUp } from 'lucide-react'
 import { db } from '../Auth/Firebase'
 import { addComment } from '../store/slices/postsSlice'
 
@@ -39,30 +38,35 @@ export const CommentsSection = ({ postId }) => {
     if (!expanded) setExpanded(true)
   }
 
-  const visibleComments = expanded ? comments : comments.slice(-2)
+  const visibleComments = expanded ? comments : comments.slice(0, 2)
 
   return (
-    <div className="mt-1 px-3 sm:px-0">
+    <div className="mt-2 px-3 sm:px-0">
       {comments.length > 2 && !expanded && (
-        <button onClick={() => setExpanded(true)} className="flex items-center gap-1 text-[12px] text-slate-400">
-          View all {comments.length} comments <ChevronDown className="h-3 w-3" />
+        <button onClick={() => setExpanded(true)} className="block mb-1 text-[12px] font-semibold text-slate-400 hover:text-slate-600 transition">
+          View all {comments.length} comments ↓
         </button>
       )}
       {expanded && comments.length > 2 && (
-        <button onClick={() => setExpanded(false)} className="flex items-center gap-1 text-[12px] text-slate-400">
-          Hide comments <ChevronUp className="h-3 w-3" />
+        <button onClick={() => setExpanded(false)} className="block mb-1 text-[12px] font-semibold text-slate-400 hover:text-slate-600 transition">
+          Hide comments ↑
         </button>
       )}
 
       {visibleComments.map((c, i) => (
-        <p key={i} className="mt-1 text-[13px]">
-          <span className="font-semibold">{c.displayName}</span> <span className="text-slate-700">{c.text}</span>
-          <span className="ml-2 text-[11px] text-slate-400">{timeAgo(c.createdAt)}</span>
-        </p>
+        <div key={i} className="mt-2 text-[13px] flex gap-2">
+          <img src={c.photoURL || 'https://i.pravatar.cc/32'} alt="" className="h-6 w-6 rounded-full object-cover shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="leading-snug">
+              <span className="font-semibold text-slate-900">{c.displayName}</span> <span className="text-slate-700">{c.text}</span>
+            </p>
+            <span className="text-[11px] text-slate-400">{timeAgo(c.createdAt)}</span>
+          </div>
+        </div>
       ))}
 
       {/* add comment */}
-      <div className="mt-2 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-2 border-t border-zinc-200 pt-2">
         <img src={safePhoto} alt="me" className="h-6 w-6 rounded-full object-cover" />
         <input
           type="text"
