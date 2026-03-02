@@ -55,8 +55,8 @@ export const StoryUploadModal = () => {
   const isVideo = file?.type?.startsWith('video')
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
-      <div className="relative flex w-full max-w-sm flex-col rounded-2xl bg-white shadow-xl">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-2 sm:p-4">
+      <div className="relative flex w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-xl" style={{ maxHeight: '90dvh' }}>
         {/* header */}
         <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-3">
           <h3 className="text-base font-semibold">Add to your story</h3>
@@ -64,7 +64,7 @@ export const StoryUploadModal = () => {
         </div>
 
         {/* body */}
-        <div className="flex flex-col gap-3 p-5">
+        <div className="flex flex-col gap-3 overflow-y-auto p-4 sm:p-5">
           {!file ? (
             <button
               type="button"
@@ -81,9 +81,9 @@ export const StoryUploadModal = () => {
           ) : (
             <div className="relative overflow-hidden rounded-xl">
               {isVideo ? (
-                <video src={preview} controls className="max-h-80 w-full rounded-xl bg-black object-contain" />
+                <video src={preview} controls className="max-h-56 w-full rounded-xl bg-black object-contain sm:max-h-80" />
               ) : (
-                <img src={preview} alt="story preview" className="max-h-80 w-full rounded-xl bg-zinc-100 object-contain" />
+                <img src={preview} alt="story preview" className="max-h-56 w-full rounded-xl bg-zinc-100 object-contain sm:max-h-80" />
               )}
               <button
                 onClick={() => setFile(null)}

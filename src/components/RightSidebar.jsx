@@ -21,15 +21,15 @@ export const RightSidebar = ({ users, friends, incomingRequests, sentRequests, u
   }
 
   return (
-    <aside className="hidden w-80 shrink-0 pt-4 lg:block">
+    <aside className="hidden w-80 shrink-0 self-start sticky top-0 overflow-y-auto h-screen pt-6 pb-6 lg:block scrollbar-hide">
       {/* current user */}
-      <div className="mb-5 flex items-center gap-3">
-        <img src={photoURL || 'https://i.pravatar.cc/80?img=50'} alt="profile" className="h-11 w-11 rounded-full object-cover" />
+      <div className="mb-6 flex items-center gap-3">
+        <img src={photoURL || 'https://i.pravatar.cc/80?img=50'} alt="profile" className="h-12 w-12 rounded-full object-cover ring-1 ring-zinc-100" />
         <div className="flex-1 overflow-hidden">
-          <p className="truncate text-[13px] font-semibold">{email?.split('@')[0] || 'user'}</p>
-          <p className="truncate text-xs text-slate-400">{displayName}</p>
+          <p className="truncate text-[13px] font-semibold text-zinc-900">{email?.split('@')[0] || 'user'}</p>
+          <p className="truncate text-xs text-zinc-400">{displayName}</p>
         </div>
-        <button className="text-xs font-semibold text-sky-500 hover:text-sky-700" onClick={handleLogout}>Log out</button>
+        <button className="text-xs font-semibold text-blue-500 hover:text-blue-600 transition" onClick={handleLogout}>Log out</button>
       </div>
 
       {/* ── friend requests ── */}

@@ -9,7 +9,7 @@ export const MobileBottomNav = () => {
   const safePhoto = photoURL || 'https://i.pravatar.cc/80?img=50'
 
   return (
-    <nav className="fixed bottom-0 left-0 z-40 flex w-full items-center justify-around border-t border-zinc-200 bg-white py-2.5 lg:hidden">
+    <nav className="fixed bottom-0 left-0 z-40 flex w-full items-center justify-around border-t border-zinc-100 bg-white/95 pb-[env(safe-area-inset-bottom,0px)] pt-2.5 backdrop-blur-md lg:hidden">
       <button><Home className="h-6 w-6" strokeWidth={2.4} /></button>
       <button><Search className="h-6 w-6" strokeWidth={1.8} /></button>
       <button onClick={() => dispatch(openCreateModal())}><PlusSquare className="h-6 w-6" strokeWidth={1.8} /></button>

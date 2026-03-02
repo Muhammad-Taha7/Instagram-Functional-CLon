@@ -1,1 +1,41 @@
 @import "tailwindcss";
+
+/* ── Mobile-safe viewport height ── */
+.mobile-vh {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ── Scrollbar hide utility ── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Smooth scrolling globally ── */
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+/* ── Clean body ── */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* ── Mobile touch scroll fix ── */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Selection color ── */
+::selection {
+  background-color: rgb(59 130 246 / 0.2);
+}

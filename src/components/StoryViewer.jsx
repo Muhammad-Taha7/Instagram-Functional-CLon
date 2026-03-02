@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { X, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Volume2, VolumeX, Trash2 } from 'lucide-react'
 import { closeStoryViewer } from '../store/slices/uiSlice'
+import { deleteStory } from '../store/slices/postsSlice'
 
 const timeAgo = (ts) => {
   if (!ts) return ''
@@ -16,6 +17,7 @@ export const StoryViewer = () => {
   const dispatch = useDispatch()
   const { open, stories, userIndex: initIndex } = useSelector((s) => s.ui.storyViewer)
   const users = useSelector((s) => s.users.all)
+  const authUid = useSelector((s) => s.auth.uid)
 
   const [currentIndex, setCurrentIndex] = useState(initIndex || 0)
   const [progress, setProgress] = useState(0)
@@ -127,6 +129,16 @@ export const StoryViewer = () => {
     goNext()
   }
 
+  const handleDelete = async () => {
+    if (!story) return
+    try {
+      await dispatch(deleteStory({ storyId: story.id, ownerId: story.uid })).unwrap()
+      dispatch(closeStoryViewer())
+    } catch (err) {
+      console.error('delete story failed', err)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/95">
       {/* Close button */}
@@ -136,6 +148,15 @@ export const StoryViewer = () => {
       >
         <X className="h-6 w-6" />
       </button>
+
+      {story.uid === authUid && (
+        <button
+          onClick={handleDelete}
+          className="absolute right-16 top-4 z-10 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
+        >
+          <Trash2 className="h-6 w-6" />
+        </button>
+      )}
 
       {/* Left arrow */}
       {currentIndex > 0 && (
@@ -158,7 +179,7 @@ export const StoryViewer = () => {
       )}
 
       {/* Story container */}
-      <div className="relative flex h-full max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-xl sm:h-[85vh]">
+      <div className="relative flex h-full w-full max-w-md flex-col overflow-hidden sm:h-[85vh] sm:max-h-[90vh] sm:rounded-xl">
         {/* Progress bars */}
         <div className="absolute left-0 right-0 top-0 z-10 flex gap-1 px-3 pt-3">
           {stories.map((_, i) => (

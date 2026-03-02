@@ -73,8 +73,7 @@ export const CommentsModal = () => {
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/60" onClick={handleClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex w-full max-w-lg flex-col rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl overflow-hidden"
-        style={{ maxHeight: '85vh' }}
+        className="flex w-full max-w-lg flex-col rounded-t-2xl bg-white shadow-2xl overflow-hidden max-h-[90dvh] sm:max-h-[85vh] sm:rounded-2xl"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
@@ -106,7 +105,7 @@ export const CommentsModal = () => {
         )}
 
         {/* Comments list */}
-        <div className="flex-1 overflow-y-auto px-4 py-2" style={{ minHeight: 200, maxHeight: '55vh' }}>
+        <div className="flex-1 overflow-y-auto px-4 py-2" style={{ minHeight: 150 }}>
           {comments.length === 0 && (
             <div className="flex h-full items-center justify-center py-12">
               <div className="text-center">

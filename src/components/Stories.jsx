@@ -22,7 +22,7 @@ export const Stories = ({ stories, ownStories }) => {
   }
 
   return (
-    <div className="mb-3 flex gap-4 overflow-x-auto border-b border-zinc-100 px-3 pb-3 sm:mb-5 sm:px-0">
+    <div className="mb-4 flex gap-4 overflow-x-auto rounded-lg border border-zinc-100 bg-white px-4 py-3 shadow-sm sm:mb-6 scrollbar-hide">
       {/* own story slot */}
       <div className="flex shrink-0 flex-col items-center gap-1">
         <div className="relative">

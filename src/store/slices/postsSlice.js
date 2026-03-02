@@ -77,6 +77,15 @@ export const createStory = createAsyncThunk(
   }
 )
 
+export const deleteStory = createAsyncThunk(
+  'posts/deleteStory',
+  async ({ storyId, ownerId }, { getState }) => {
+    const { auth } = getState()
+    if (auth.uid !== ownerId) throw new Error('Unauthorized: only the story owner can delete')
+    await remove(ref(db, `stories/${ownerId}/${storyId}`))
+  }
+)
+
 export const deletePost = createAsyncThunk(
   'posts/deletePost',
   async ({ postId, ownerId }, { getState }) => {

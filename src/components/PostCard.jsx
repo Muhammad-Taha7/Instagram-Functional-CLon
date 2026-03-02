@@ -77,14 +77,14 @@ export const PostCard = ({ post }) => {
   const captionLong = post.caption && post.caption.length > 100
 
   return (
-    <article className="border-b border-zinc-200 pb-3 sm:pb-4">
+    <article className="overflow-hidden rounded-lg border border-zinc-100 bg-white shadow-sm">
       {/* ── Post Header ── */}
-      <div className="mb-2 flex items-center gap-3 px-3 sm:px-0">
-        <img src={post.photoURL || 'https://i.pravatar.cc/40'} alt="" className="h-9 w-9 rounded-full object-cover" />
+      <div className="flex items-center gap-3 px-4 py-3">
+        <img src={post.photoURL || 'https://i.pravatar.cc/40'} alt="" className="h-9 w-9 rounded-full object-cover ring-1 ring-zinc-100" />
         <div className="flex-1 overflow-hidden">
-          <p className="truncate text-[13px] font-semibold leading-tight">
+          <p className="truncate text-[13px] font-semibold leading-tight text-zinc-900">
             {post.displayName || post.uid}
-            <span className="ml-1.5 font-normal text-slate-400">• {timeAgo(post.createdAt)}</span>
+            <span className="ml-1.5 font-normal text-zinc-400">• {timeAgo(post.createdAt)}</span>
           </p>
         </div>
 
@@ -146,7 +146,7 @@ export const PostCard = ({ post }) => {
       <MediaCarousel media={media} />
 
       {/* ── Action Bar ── */}
-      <div className="mt-3 flex items-center gap-4 px-3 sm:px-0">
+      <div className="mt-3 flex items-center gap-4 px-4">
         <button onClick={() => dispatch(toggleLike({ postId: post.id }))} className="transition active:scale-125">
           <Heart
             className={`h-6 w-6 transition ${isLiked ? 'fill-red-500 text-red-500 animate-[pulse_0.3s_ease-in-out]' : 'text-slate-900'}`}
@@ -165,13 +165,13 @@ export const PostCard = ({ post }) => {
       </div>
 
       {/* ── Like Count ── */}
-      <p className="mt-2 px-3 text-[13px] font-semibold sm:px-0">
+      <p className="mt-2 px-4 text-[13px] font-semibold text-zinc-900">
         {(post.likeCount || 0).toLocaleString()} likes
       </p>
 
       {/* ── Caption with hashtags ── */}
       {post.caption && (
-        <div className="mt-1 px-3 text-[13px] leading-snug sm:px-0">
+        <div className="mt-1 px-4 text-[13px] leading-snug text-zinc-800">
           <span className="font-semibold">{post.displayName || post.uid}</span>{' '}
           {captionLong && !showFullCaption ? (
             <>
@@ -186,7 +186,7 @@ export const PostCard = ({ post }) => {
       )}
 
       {/* ── View Comments link (opens popup) ── */}
-      <div className="mt-1 px-3 sm:px-0">
+      <div className="mt-1 px-4">
         {commentCount > 0 ? (
           <button
             onClick={() => dispatch(openCommentsModal(post.id))}
@@ -205,7 +205,7 @@ export const PostCard = ({ post }) => {
       </div>
 
       {/* ── Timestamp ── */}
-      <p className="mt-1 px-3 text-[10px] uppercase text-slate-400 sm:px-0">
+      <p className="mt-1 px-4 pb-3 text-[10px] uppercase text-zinc-400">
         {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : ''}
       </p>
     </article>

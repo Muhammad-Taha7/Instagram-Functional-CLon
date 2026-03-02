@@ -7,8 +7,8 @@ export const FeedHeader = ({ onShowMobileRequests, incomingRequestsCount }) => {
   const dispatch = useDispatch()
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-2.5 lg:hidden">
-      <span className="text-xl font-semibold italic">Instagram</span>
+    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-zinc-100 bg-white/95 backdrop-blur-md px-4 py-2.5 lg:hidden">
+      <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-pink-500 via-red-500 to-amber-500 bg-clip-text text-transparent">Instagram</span>
       <div className="flex items-center gap-5">
         <button onClick={() => dispatch(openCreateModal())}><PlusSquare className="h-6 w-6" strokeWidth={1.8} /></button>
         <button className="relative" onClick={() => onShowMobileRequests((p) => !p)}>

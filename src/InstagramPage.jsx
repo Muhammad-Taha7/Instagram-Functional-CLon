@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { ref, onValue, update } from 'firebase/database'
 import { db } from './Auth/Firebase'
@@ -25,6 +25,9 @@ import { ConfirmModal } from './components/ConfirmModal'
 export const InstagramPage = () => {
   const dispatch = useDispatch()
   const [showMobileRequests, setShowMobileRequests] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(8)
+  const sentinelRef = useRef(null)
+  const feedRef = useRef(null)
 
   /* ── Redux state ─────────────────────────────────────── */
   const { uid, email, displayName, photoURL } = useSelector((s) => s.auth)
@@ -124,11 +127,36 @@ export const InstagramPage = () => {
     return Object.values(incomingRequests).filter((r) => r.status === 'pending')
   }, [incomingRequests])
 
+  /* ── infinite scroll over posts ─────────────────────── */
+  useEffect(() => {
+    setVisibleCount((prev) => Math.max(8, Math.min(posts.length, prev)))
+  }, [posts.length])
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (entry.isIntersecting) {
+          setVisibleCount((c) => Math.min(posts.length, c + 6))
+        }
+      },
+      { root: feedRef.current, rootMargin: '300px', threshold: 0 }
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [posts.length])
+
+  const visiblePosts = posts.slice(0, visibleCount)
+
   /* ══════════════════════════════════════════════════════════
      RENDER
      ══════════════════════════════════════════════════════════ */
   return (
-    <div className="flex min-h-screen flex-col bg-white text-sm text-slate-900 lg:flex-row">
+    <div className="mobile-vh flex flex-col overflow-hidden bg-zinc-50 text-sm text-zinc-900 lg:flex-row">
 
       {/* ── Modals ── */}
       <ConfirmModal />
@@ -143,35 +171,57 @@ export const InstagramPage = () => {
       {/* ── MOBILE FRIEND REQUESTS PANEL ─── */}
       <FriendRequestsPanel show={showMobileRequests} requests={requestsList} />
 
-      {/* ── DESKTOP LEFT SIDEBAR ─────────── */}
+      {/* ── DESKTOP LEFT SIDEBAR (fixed, never scrolls) ─── */}
       <Sidebar incomingRequestsCount={requestsList.length} />
 
-      {/* ── MAIN CONTENT ─────────────────── */}
-      <div className="flex flex-1 justify-center pb-16 lg:ml-18 lg:pb-0">
-        <div className="flex w-full max-w-205 gap-8 px-0 py-2 sm:px-4 sm:py-6 lg:px-0">
+      {/* ── MAIN CONTENT AREA ─────────────── */}
+      <div className="flex min-h-0 flex-1 justify-center lg:ml-18">
+        <div className="flex h-full w-full max-w-205 gap-8 px-0 lg:px-0">
 
-          {/* ── CENTER FEED ──────────────── */}
-          <section className="mx-auto w-full max-w-117.5">
+          {/* ── CENTER FEED (only this scrolls) ── */}
+          <section ref={feedRef} className="mx-auto w-full max-w-117.5 flex-1 overflow-y-auto overscroll-y-contain pb-20 pt-2 sm:pt-6 lg:pb-6 scrollbar-hide">
 
             {/* stories bar */}
             <Stories stories={friendStories} ownStories={ownStories} />
 
             {/* posts feed */}
             {posts.length === 0 && (
-              <div className="py-16 text-center text-slate-400">
-                <p className="text-base font-medium">No posts yet</p>
-                <p className="mt-1 text-xs">Create a post or add friends to see their posts here.</p>
+              <div className="py-16 text-center text-zinc-400">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-zinc-200">
+                  <svg className="h-8 w-8 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                  </svg>
+                </div>
+                <p className="text-base font-semibold text-zinc-600">No posts yet</p>
+                <p className="mt-1 text-xs text-zinc-400">Create a post or add friends to see their posts here.</p>
               </div>
             )}
 
-            <div className="flex flex-col gap-2 sm:gap-4">
-              {posts.map((post) => (
+            <div className="flex flex-col gap-3 sm:gap-5">
+              {visiblePosts.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
+
+              {posts.length > visiblePosts.length && (
+                <div ref={sentinelRef} className="flex items-center justify-center py-6">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-500" />
+                </div>
+              )}
+
+              {posts.length > 0 && posts.length === visiblePosts.length && (
+                <div className="py-6 text-center">
+                  <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200">
+                    <svg className="h-6 w-6 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                  </div>
+                  <p className="text-xs font-medium text-zinc-400">You're all caught up</p>
+                </div>
+              )}
             </div>
           </section>
 
-          {/* ── RIGHT SIDEBAR (desktop) ──── */}
+          {/* ── RIGHT SIDEBAR (fixed position, no scroll) ── */}
           <RightSidebar
             users={users}
             friends={friends}

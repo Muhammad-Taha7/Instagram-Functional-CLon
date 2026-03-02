@@ -60,8 +60,8 @@ export const CreatePostModal = () => {
   if (!showCreateModal) return null
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
-      <div className="relative flex w-full max-w-lg flex-col rounded-2xl bg-white shadow-xl">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-2 sm:p-4">
+      <div className="relative flex w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl" style={{ maxHeight: '90dvh' }}>
         {/* header */}
         <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-3">
           <h3 className="text-base font-semibold">Create new post</h3>
@@ -69,7 +69,7 @@ export const CreatePostModal = () => {
         </div>
 
         {/* body */}
-        <div className="flex flex-col gap-3 p-5">
+        <div className="flex flex-col gap-3 overflow-y-auto p-4 sm:p-5">
           {files.length === 0 ? (
             <button
               type="button"
@@ -85,9 +85,9 @@ export const CreatePostModal = () => {
           ) : (
             <div className="relative">
               {files[previewIdx]?.type.startsWith('video') ? (
-                <video src={previews[previewIdx]} controls className="max-h-72 w-full rounded-xl bg-black object-contain" />
+                <video src={previews[previewIdx]} controls className="max-h-52 w-full rounded-xl bg-black object-contain sm:max-h-72" />
               ) : (
-                <img src={previews[previewIdx]} alt="preview" className="max-h-72 w-full rounded-xl bg-zinc-100 object-contain" />
+                <img src={previews[previewIdx]} alt="preview" className="max-h-52 w-full rounded-xl bg-zinc-100 object-contain sm:max-h-72" />
               )}
 
               {files.length > 1 && previewIdx > 0 && (
