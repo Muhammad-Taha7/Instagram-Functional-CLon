@@ -32,9 +32,12 @@ export const AuthModel = () => {
     try {
       if (mode === 'signup') {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-        if (name.trim()) {
-          await updateProfile(userCredential.user, { displayName: name.trim() })
-        }
+        const safeName = name.trim()
+        const defaultPhoto = `https://i.pravatar.cc/150?u=${encodeURIComponent(email)}`
+        await updateProfile(userCredential.user, {
+          displayName: safeName || email.split('@')[0],
+          photoURL: defaultPhoto,
+        })
         await signOut(auth)
         setMessage('Sign up successful. Please log in to continue.')
         setMode('login')

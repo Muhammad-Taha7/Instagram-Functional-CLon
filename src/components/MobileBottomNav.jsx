@@ -1,20 +1,21 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Home, Search, PlusSquare, Clapperboard } from 'lucide-react'
+import { Home, Search, PlusSquare, Heart, MessageCircle } from 'lucide-react'
 import { openCreateModal } from '../store/slices/uiSlice'
 
-export const MobileBottomNav = () => {
+export const MobileBottomNav = ({ onHome, onSearch, onChat, onNotifications, onProfile }) => {
   const dispatch = useDispatch()
   const { photoURL } = useSelector((s) => s.auth)
   const safePhoto = photoURL || 'https://i.pravatar.cc/80?img=50'
 
   return (
     <nav className="fixed bottom-0 left-0 z-40 flex w-full items-center justify-around border-t border-zinc-100 bg-white/95 pb-[env(safe-area-inset-bottom,0px)] pt-2.5 backdrop-blur-md lg:hidden">
-      <button><Home className="h-6 w-6" strokeWidth={2.4} /></button>
-      <button><Search className="h-6 w-6" strokeWidth={1.8} /></button>
+      <button onClick={onHome}><Home className="h-6 w-6" strokeWidth={2.4} /></button>
+      <button onClick={onSearch}><Search className="h-6 w-6" strokeWidth={1.8} /></button>
+      <button onClick={onChat}><MessageCircle className="h-6 w-6" strokeWidth={1.8} /></button>
       <button onClick={() => dispatch(openCreateModal())}><PlusSquare className="h-6 w-6" strokeWidth={1.8} /></button>
-      <button><Clapperboard className="h-6 w-6" strokeWidth={1.8} /></button>
-      <button className="rounded-full ring-2 ring-transparent">
+      <button onClick={onNotifications}><Heart className="h-6 w-6" strokeWidth={1.8} /></button>
+      <button onClick={onProfile} className="rounded-full ring-2 ring-transparent">
         <img src={safePhoto} alt="profile" className="h-7 w-7 rounded-full object-cover" />
       </button>
     </nav>

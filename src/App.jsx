@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, updateProfile } from 'firebase/auth'
 import { useDispatch } from 'react-redux'
 import { AuthModel } from './Auth/AuthModel'
 import { auth } from './Auth/Firebase'
@@ -32,11 +32,15 @@ export const App = () => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser)
       if (firebaseUser) {
+        const defaultPhoto = `https://i.pravatar.cc/150?u=${encodeURIComponent(firebaseUser.email || firebaseUser.uid)}`
+        if (!firebaseUser.photoURL) {
+          updateProfile(firebaseUser, { photoURL: defaultPhoto }).catch(() => {})
+        }
         dispatch(setAuthUser({
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL,
+          photoURL: firebaseUser.photoURL || defaultPhoto,
         }))
       } else {
         dispatch(clearAuthUser())

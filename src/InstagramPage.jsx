@@ -25,6 +25,7 @@ import { ConfirmModal } from './components/ConfirmModal'
 export const InstagramPage = () => {
   const dispatch = useDispatch()
   const [showMobileRequests, setShowMobileRequests] = useState(false)
+  const [mobilePanel, setMobilePanel] = useState(null)
   const [visibleCount, setVisibleCount] = useState(8)
   const sentinelRef = useRef(null)
   const feedRef = useRef(null)
@@ -127,6 +128,17 @@ export const InstagramPage = () => {
     return Object.values(incomingRequests).filter((r) => r.status === 'pending')
   }, [incomingRequests])
 
+  const toggleMobilePanel = (panel) => {
+    setShowMobileRequests(false)
+    setMobilePanel((p) => (p === panel ? null : panel))
+  }
+
+  const handleMobileHome = () => {
+    setShowMobileRequests(false)
+    setMobilePanel(null)
+    feedRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   /* ── infinite scroll over posts ─────────────────────── */
   useEffect(() => {
     setVisibleCount((prev) => Math.max(8, Math.min(posts.length, prev)))
@@ -172,7 +184,11 @@ export const InstagramPage = () => {
       <FriendRequestsPanel show={showMobileRequests} requests={requestsList} />
 
       {/* ── DESKTOP LEFT SIDEBAR (fixed, never scrolls) ─── */}
-      <Sidebar incomingRequestsCount={requestsList.length} />
+      <Sidebar
+        incomingRequestsCount={requestsList.length}
+        mobilePanel={mobilePanel}
+        setMobilePanel={setMobilePanel}
+      />
 
       {/* ── MAIN CONTENT AREA ─────────────── */}
       <div className="flex min-h-0 flex-1 justify-center lg:ml-18">
@@ -237,7 +253,13 @@ export const InstagramPage = () => {
       </div>
 
       {/* ── MOBILE BOTTOM TAB BAR ────────── */}
-      <MobileBottomNav />
+      <MobileBottomNav
+        onHome={handleMobileHome}
+        onSearch={() => toggleMobilePanel('search')}
+        onChat={() => toggleMobilePanel('chat')}
+        onNotifications={() => toggleMobilePanel('notifications')}
+        onProfile={() => setMobilePanel(null)}
+      />
     </div>
   )
 }

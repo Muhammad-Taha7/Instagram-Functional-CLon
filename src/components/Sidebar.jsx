@@ -49,7 +49,7 @@ function timeAgoShort(ts) {
 /* ── Helper: chat-room id ──────────────────────────────── */
 const getChatId = (a, b) => [a, b].sort().join('_')
 
-export const Sidebar = ({ incomingRequestsCount }) => {
+export const Sidebar = ({ incomingRequestsCount, mobilePanel, setMobilePanel }) => {
   const dispatch = useDispatch()
   const { photoURL } = useSelector((s) => s.auth)
   const users = useSelector((s) => s.users.all)
@@ -106,18 +106,51 @@ export const Sidebar = ({ incomingRequestsCount }) => {
     setNotifOpen(false)
     setSearchOpen((s) => !s)
     if (searchOpen) setQuery('')
+    if (setMobilePanel) setMobilePanel((p) => (p === 'search' ? null : 'search'))
   }
   const toggleChat = () => {
     setSearchOpen(false)
     setNotifOpen(false)
     setChatOpen((s) => !s)
     if (!chatOpen) setActiveChat(null)
+    if (setMobilePanel) setMobilePanel((p) => (p === 'chat' ? null : 'chat'))
   }
   const toggleNotif = () => {
     setSearchOpen(false)
     setChatOpen(false)
     setNotifOpen((s) => !s)
+    if (setMobilePanel) setMobilePanel((p) => (p === 'notifications' ? null : 'notifications'))
   }
+
+  useEffect(() => {
+    if (!mobilePanel) {
+      setSearchOpen(false)
+      setChatOpen(false)
+      setNotifOpen(false)
+      return
+    }
+    if (mobilePanel === 'search') {
+      setSearchOpen(true)
+      setChatOpen(false)
+      setNotifOpen(false)
+      return
+    }
+    if (mobilePanel === 'chat') {
+      setSearchOpen(false)
+      setChatOpen(true)
+      setNotifOpen(false)
+      return
+    }
+    if (mobilePanel === 'notifications') {
+      setSearchOpen(false)
+      setChatOpen(false)
+      setNotifOpen(true)
+      return
+    }
+    setSearchOpen(false)
+    setChatOpen(false)
+    setNotifOpen(false)
+  }, [mobilePanel])
 
   /* ── friend requests list ── */
   const requestsList = useMemo(() => {
@@ -281,7 +314,8 @@ export const Sidebar = ({ incomingRequestsCount }) => {
      RENDER
      ══════════════════════════════════════════════════════════ */
   return (
-    <aside className="fixed left-0 top-0 z-30 hidden h-screen w-18 flex-col items-center border-r border-zinc-100 bg-white py-5 lg:flex">
+    <>
+      <aside className="fixed left-0 top-0 z-30 hidden h-screen w-18 flex-col items-center border-r border-zinc-100 bg-white py-5 lg:flex">
       {/* Logo */}
       <div className="mb-8 flex h-8 w-8 items-center justify-center">
         <img
@@ -341,10 +375,11 @@ export const Sidebar = ({ incomingRequestsCount }) => {
           <Menu className="h-5.5 w-5.5 stroke-[1.6] text-zinc-700" />
         </button>
       </div>
+    </aside>
 
       {/* ═══════ NOTIFICATIONS PANEL ═══════ */}
       {notifOpen && (
-        <div className="absolute left-full top-0 z-20 hidden h-full w-96 flex-col border-r border-zinc-100 bg-white shadow-xl lg:flex">
+        <div className="fixed inset-0 z-50 flex flex-col bg-white shadow-xl lg:fixed lg:top-0 lg:left-18 lg:h-screen lg:w-96 lg:border-r lg:border-zinc-100">
           <div className="border-b border-zinc-100 px-5 py-5">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-zinc-900">Notifications</h2>
@@ -410,7 +445,7 @@ export const Sidebar = ({ incomingRequestsCount }) => {
 
       {/* ═══════ SEARCH PANEL ═══════ */}
       {searchOpen && (
-        <div className="absolute left-full top-0 z-20 hidden h-full w-80 flex-col border-r border-zinc-100 bg-white shadow-xl lg:flex">
+        <div className="fixed inset-0 z-50 flex flex-col bg-white shadow-xl lg:fixed lg:top-0 lg:left-18 lg:h-screen lg:w-80 lg:border-r lg:border-zinc-100">
           <div className="border-b border-zinc-100 px-5 py-5">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-zinc-900">Search</h2>
@@ -453,7 +488,7 @@ export const Sidebar = ({ incomingRequestsCount }) => {
 
       {/* ═══════ CHAT PANEL ═══════ */}
       {chatOpen && (
-        <div className="absolute left-full top-0 z-20 hidden h-full w-105 flex-col border-r border-zinc-100 bg-white shadow-xl lg:flex">
+        <div className="fixed inset-0 z-50 flex flex-col bg-white shadow-xl lg:fixed lg:top-0 lg:left-18 lg:h-screen lg:w-105 lg:border-r lg:border-zinc-100">
           {!activeChat ? (
             /* ── Friend list view ── */
             <>
@@ -723,6 +758,6 @@ export const Sidebar = ({ incomingRequestsCount }) => {
           )}
         </div>
       )}
-    </aside>
+    </>
   )
 }
